@@ -13,7 +13,7 @@ export interface Subscription {
   id: string;
   user_id: string;
   agent_id: string;
-  status: 'active' | 'cancelled';
+  status: string; // Changed from 'active' | 'cancelled' to string to match DB
   start_date: string;
   promo_end_date: string | null;
   created_at: string;
@@ -26,6 +26,6 @@ export interface UserProfile {
   first_name: string;
   last_name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: string; // Changed from 'user' | 'admin' to string to match DB
   created_at: string;
 }

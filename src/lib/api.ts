@@ -46,7 +46,7 @@ export async function getUserSubscriptions(userId: string): Promise<Subscription
     throw error;
   }
 
-  return data || [];
+  return (data || []) as Subscription[];
 }
 
 export async function subscribeToAgent(agentId: string): Promise<void> {
@@ -101,10 +101,16 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     throw error;
   }
   
-  return data;
+  return data as UserProfile;
 }
 
-export async function createUserProfile(profile: Partial<UserProfile>): Promise<void> {
+export async function createUserProfile(profile: { 
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role?: string;
+}): Promise<void> {
   const { error } = await supabase
     .from('users')
     .insert(profile);
@@ -126,7 +132,7 @@ export async function getAllUsers(): Promise<UserProfile[]> {
     throw error;
   }
   
-  return data || [];
+  return (data || []) as UserProfile[];
 }
 
 export async function getAllSubscriptions(): Promise<Subscription[]> {
@@ -143,5 +149,5 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
     throw error;
   }
   
-  return data || [];
+  return (data || []) as Subscription[];
 }
