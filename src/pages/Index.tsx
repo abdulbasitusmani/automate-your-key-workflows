@@ -1,16 +1,10 @@
 
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Home } from 'lucide-react';
+import HomePage from './Home';
 
-// This file is updated to simply redirect to the home page
+// Use Home component directly
 const Index = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    navigate('/');
-  }, [navigate]);
-
-  return null;
+  return <HomePage />;
 };
 
 export default Index;
