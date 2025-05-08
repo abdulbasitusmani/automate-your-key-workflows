@@ -9,7 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          base_price: number
+          created_at: string
+          description: string
+          id: string
+          name: string
+          promo_duration: number | null
+          promo_price: number | null
+        }
+        Insert: {
+          base_price: number
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          promo_duration?: number | null
+          promo_price?: number | null
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          promo_duration?: number | null
+          promo_price?: number | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          promo_end_date: string | null
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          promo_end_date?: string | null
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          promo_end_date?: string | null
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

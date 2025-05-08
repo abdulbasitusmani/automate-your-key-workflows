@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase, signOut as supabaseSignOut } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { getUserProfile } from '@/lib/api';
 
@@ -27,37 +27,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-      setUser(data.session?.user || null);
-      
-      if (data.session?.user) {
-        try {
-          const profile = await getUserProfile(data.session.user.id);
-          setRole(profile?.role || 'user');
-        } catch (error) {
-          console.error('Error fetching user role:', error);
-          setRole('user');
-        }
-      }
-      
-      setIsLoading(false);
-    };
-
-    fetchSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user || null);
       
       if (newSession?.user) {
-        getUserProfile(newSession.user.id)
-          .then(profile => setRole(profile?.role || 'user'))
-          .catch(error => {
-            console.error('Error fetching user role:', error);
-            setRole('user');
-          });
+        // Defer fetching user profile to prevent deadlocks
+        setTimeout(() => {
+          getUserProfile(newSession.user.id)
+            .then(profile => setRole(profile?.role || 'user'))
+            .catch(error => {
+              console.error('Error fetching user role:', error);
+              setRole('user');
+            });
+        }, 0);
       } else {
         setRole(null);
       }
@@ -65,16 +49,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setUser(data.session?.user || null);
+      
+      if (data.session?.user) {
+        getUserProfile(data.session.user.id)
+          .then(profile => setRole(profile?.role || 'user'))
+          .catch(error => {
+            console.error('Error fetching user role:', error);
+            setRole('user');
+          });
+      }
+      
+      setIsLoading(false);
+    });
+
     return () => {
-      authListener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    await supabaseSignOut();
-    setUser(null);
-    setSession(null);
-    setRole(null);
+    // Clean up auth state first
+    const cleanupAuthState = () => {
+      // Remove standard auth tokens
+      localStorage.removeItem('supabase.auth.token');
+      // Remove all Supabase auth keys from localStorage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      // Remove from sessionStorage if in use
+      Object.keys(sessionStorage || {}).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    };
+
+    try {
+      // Clean up auth state
+      cleanupAuthState();
+      // Attempt global sign out
+      await supabase.auth.signOut({ scope: 'global' });
+      setUser(null);
+      setSession(null);
+      setRole(null);
+      // Force page reload for a clean state
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Force reload anyway as fallback
+      window.location.href = '/login';
+    }
   };
 
   return (
