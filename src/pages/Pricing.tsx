@@ -3,10 +3,79 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAgents } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+
+// Define Package interface for static data
+interface PackageItem {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: number;
+  promoPrice?: number;
+  promoDuration?: number;
+  features: string[];
+}
+
+// Static package data
+const packages: PackageItem[] = [
+  {
+    id: 1,
+    name: 'Pack Social',
+    description: 'Automate your social media engagement with our AI-powered social media assistant.',
+    basePrice: 300,
+    promoPrice: 250,
+    promoDuration: 2, // months
+    features: [
+      'AI-powered Instagram DM responses',
+      'Automated content scheduling',
+      'Sentiment analysis for messages',
+      'Custom reply templates',
+      'Follower engagement tracking'
+    ]
+  },
+  {
+    id: 2,
+    name: 'Pack Office',
+    description: 'Streamline your office workflows with intelligent scheduling and reminders.',
+    basePrice: 450,
+    features: [
+      'WhatsApp reminder automation',
+      'Meeting scheduler and organizer',
+      'Document processing and sorting',
+      'Email template management',
+      'Client communication tracking'
+    ]
+  },
+  {
+    id: 3,
+    name: 'Pack Manager',
+    description: 'Take control of your finances with automated bill management and expense tracking.',
+    basePrice: 500,
+    features: [
+      'Expense tracking and categorization',
+      'Bill payment automation',
+      'Invoice generation and sending',
+      'Financial reporting and analytics',
+      'Budget optimization suggestions'
+    ]
+  },
+  {
+    id: 4,
+    name: 'Pack Closer',
+    description: 'Convert leads to sales with automated follow-ups and personalized messaging.',
+    basePrice: 600,
+    features: [
+      'Lead qualification automation',
+      'Personalized follow-up sequences',
+      'Deal progress tracking',
+      'Proposal generation assistance',
+      'Sales performance analytics'
+    ]
+  }
+];
 
 const PricingPage = () => {
   const { data: agents, isLoading } = useQuery({
@@ -17,7 +86,7 @@ const PricingPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const handleSelectPlan = (agentId: string) => {
+  const handleSelectPlan = (packageId: number) => {
     if (!user) {
       toast.info('Please log in to subscribe to this plan.', {
         action: {
@@ -28,7 +97,8 @@ const PricingPage = () => {
       return;
     }
     
-    navigate(`/agents/${agentId}`);
+    toast.success('This feature is coming soon!');
+    // Future implementation: navigate(`/packages/${packageId}`);
   };
   
   if (isLoading) {
@@ -45,59 +115,48 @@ const PricingPage = () => {
         <div className="text-center mb-16">
           <h1 className="heading-lg mb-4">Pricing Plans</h1>
           <p className="subtitle max-w-2xl mx-auto">
-            Choose the perfect AI agent for your business needs. All plans include our core automation features.
+            Choose the perfect AI package for your business needs. All plans include our core automation features.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {agents?.map((agent) => (
-            <div key={agent.id} className="bg-white rounded-xl shadow-custom p-6 flex flex-col">
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-keysai-accent mb-2">{agent.name}</h3>
-                <p className="text-keysai-textBody text-sm mb-6">{agent.description}</p>
+          {packages.map((pkg) => (
+            <div key={pkg.id} className="bg-white rounded-xl shadow-custom p-6 flex flex-col h-full">
+              <div className="mb-6 flex-grow">
+                <h3 className="text-xl font-bold text-keysai-accent mb-2">{pkg.name}</h3>
+                <p className="text-keysai-textBody text-sm mb-6">{pkg.description}</p>
                 
                 <div className="mt-auto mb-6">
-                  {agent.promo_price ? (
+                  {pkg.promoPrice ? (
                     <div>
                       <p className="text-3xl font-bold text-keysai-accent">
-                        {agent.promo_price}€<span className="text-sm font-normal">/month</span>
+                        {pkg.promoPrice}€<span className="text-sm font-normal">/month</span>
                       </p>
-                      <p className="text-sm text-gray-500 line-through">{agent.base_price}€/month</p>
+                      <p className="text-sm text-gray-500 line-through">{pkg.basePrice}€/month</p>
                       <p className="text-sm text-keysai-textBody">
-                        for first {agent.promo_duration} months
+                        for first {pkg.promoDuration} months
                       </p>
                     </div>
                   ) : (
                     <p className="text-3xl font-bold text-keysai-accent">
-                      {agent.base_price}€<span className="text-sm font-normal">/month</span>
+                      {pkg.basePrice}€<span className="text-sm font-normal">/month</span>
                     </p>
                   )}
                 </div>
                 
                 <ul className="space-y-3 mb-6">
-                  {/* Example features - ideally these would come from the database */}
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
-                    <span className="text-sm">24/7 Automated Responses</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
-                    <span className="text-sm">Custom Integration Settings</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
-                    <span className="text-sm">Usage Analytics Dashboard</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
-                    <span className="text-sm">Email Support</span>
-                  </li>
+                  {pkg.features.map((feature, index) => (
+                    <li key={index} className="flex items-start">
+                      <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
               
               <Button 
                 className="w-full mt-auto" 
-                onClick={() => handleSelectPlan(agent.id)}
+                onClick={() => handleSelectPlan(pkg.id)}
               >
                 Choose Plan
               </Button>

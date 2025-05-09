@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { getAllUsers, getAllSubscriptions, updateUserRole } from '@/lib/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Plus, Trash2, Edit2, Save, Shield, Package } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Shield, Package, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,11 +25,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 
-import AddAgentForm from '@/components/AddAgentForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import AddPackageForm from '@/components/AddPackageForm';
 
 // Define the type for package items
 interface PackageItem {
@@ -47,7 +48,7 @@ const AdminPage = () => {
   const { user, role } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
-  const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
+  const [isAddPackageOpen, setIsAddPackageOpen] = useState(false);
   const isMobile = useIsMobile();
   
   // Contact Information State
@@ -181,50 +182,6 @@ const AdminPage = () => {
     setIsEditing(false);
   };
 
-  const handleSaveAgent = async (agentId: string, updatedData: any) => {
-    try {
-      const { error } = await supabase
-        .from('agents')
-        .update(updatedData)
-        .eq('id', agentId);
-      
-      if (error) throw error;
-      
-      toast.success('Agent updated successfully!');
-      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update agent');
-    }
-  };
-
-  const handleDeleteAgent = async (agentId: string) => {
-    try {
-      // Check if there are any subscriptions using this agent
-      const { data: relatedSubscriptions } = await supabase
-        .from('subscriptions')
-        .select('id')
-        .eq('agent_id', agentId);
-        
-      if (relatedSubscriptions && relatedSubscriptions.length > 0) {
-        return toast.error('Cannot delete agent with active subscriptions');
-      }
-      
-      const { error } = await supabase
-        .from('agents')
-        .delete()
-        .eq('id', agentId);
-      
-      if (error) throw error;
-      
-      toast.success('Agent deleted successfully!');
-      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
-      queryClient.invalidateQueries({ queryKey: ['agents'] });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to delete agent');
-    }
-  };
-
   const handleUpdateUserRole = async (userId: string, newRole: string) => {
     try {
       await updateUserRole(userId, newRole);
@@ -302,159 +259,32 @@ const AdminPage = () => {
     setPackages(updatedPackages);
   };
 
+  const handleAddNewPackage = (newPackage: Omit<PackageItem, 'id'>) => {
+    // Generate a new ID (in a real app, this would be handled by the database)
+    const newId = Math.max(...packages.map(p => p.id)) + 1;
+    const packageToAdd = {
+      ...newPackage,
+      id: newId
+    };
+    
+    setPackages([...packages, packageToAdd]);
+    setIsAddPackageOpen(false);
+    toast.success('Package added successfully!');
+  };
+
   return (
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="heading-lg mb-8">Admin Panel</h1>
         
-        <Tabs defaultValue="agents" className="space-y-6">
+        <Tabs defaultValue="packages" className="space-y-6">
           <TabsList className="mb-8 flex flex-wrap overflow-auto">
-            <TabsTrigger value="agents">Agents</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="contact">Contact Info</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           </TabsList>
-          
-          {/* Agents Management */}
-          <TabsContent value="agents">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Agent Management</h2>
-                  <Dialog open={isAddAgentOpen} onOpenChange={setIsAddAgentOpen}>
-                    <DialogTrigger asChild>
-                      <Button 
-                        className="flex items-center gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add New Agent
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle>Add New Agent</DialogTitle>
-                        <DialogDescription>
-                          Create a new AI agent for your customers to subscribe to.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <AddAgentForm onSuccess={() => setIsAddAgentOpen(false)} />
-                    </DialogContent>
-                  </Dialog>
-                </div>
-                
-                <div className="space-y-6">
-                  {agentsLoading ? (
-                    <div className="flex justify-center py-8">
-                      <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
-                    </div>
-                  ) : !adminAgents || adminAgents.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      No agents found. Create your first agent to get started!
-                    </div>
-                  ) : (
-                    adminAgents.map((agent) => (
-                      <Card key={agent.id} className="p-4">
-                        <div className="space-y-4">
-                          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                            <div className="w-full md:w-3/4">
-                              <h3 className="text-lg font-semibold">{agent.name}</h3>
-                              <p className="text-sm text-keysai-textBody">{agent.description}</p>
-                            </div>
-                            <div className="flex gap-2 w-full md:w-auto">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleSaveAgent(agent.id, {
-                                  name: agent.name,
-                                  description: agent.description,
-                                  base_price: agent.base_price,
-                                  promo_price: agent.promo_price,
-                                  promo_duration: agent.promo_duration,
-                                })}
-                                className="flex items-center gap-2"
-                              >
-                                <Save className="h-4 w-4" />
-                                Save
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteAgent(agent.id)}
-                                className="flex items-center gap-2"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                Delete
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label>Base Price (€/month)</Label>
-                              <Input
-                                type="number"
-                                value={agent.base_price}
-                                onChange={(e) => {
-                                  const updatedAgents = adminAgents.map(a => 
-                                    a.id === agent.id ? { ...a, base_price: Number(e.target.value) } : a
-                                  );
-                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <Label>Promotional Price (€/month)</Label>
-                              <Input
-                                type="number"
-                                value={agent.promo_price || ''}
-                                onChange={(e) => {
-                                  const updatedAgents = adminAgents.map(a => 
-                                    a.id === agent.id ? { ...a, promo_price: e.target.value ? Number(e.target.value) : null } : a
-                                  );
-                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
-                                }}
-                                placeholder="Optional"
-                              />
-                            </div>
-                            <div>
-                              <Label>Promotional Duration (months)</Label>
-                              <Input
-                                type="number"
-                                value={agent.promo_duration || ''}
-                                onChange={(e) => {
-                                  const updatedAgents = adminAgents.map(a => 
-                                    a.id === agent.id ? { ...a, promo_duration: e.target.value ? Number(e.target.value) : null } : a
-                                  );
-                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
-                                }}
-                                placeholder="Optional"
-                              />
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <Label>Description</Label>
-                            <Textarea
-                              value={agent.description}
-                              onChange={(e) => {
-                                const updatedAgents = adminAgents.map(a => 
-                                  a.id === agent.id ? { ...a, description: e.target.value } : a
-                                );
-                                queryClient.setQueryData(['admin-agents'], updatedAgents);
-                              }}
-                              rows={3}
-                            />
-                          </div>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Packages Management */}
           <TabsContent value="packages">
@@ -462,13 +292,31 @@ const AdminPage = () => {
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold">Package Management</h2>
-                  <Button 
-                    onClick={() => toast.info('Package creation feature coming soon!')}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add New Package
-                  </Button>
+                  <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add New Package
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <div className="flex justify-between items-center">
+                          <DialogTitle>Add New Package</DialogTitle>
+                          <DialogClose className="rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Close</span>
+                          </DialogClose>
+                        </div>
+                        <DialogDescription>
+                          Create a new package for your customers to subscribe to.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <AddPackageForm onSubmit={handleAddNewPackage} />
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 
                 <div className="space-y-6">
@@ -480,10 +328,10 @@ const AdminPage = () => {
                             <h3 className="text-lg font-semibold">{pkg.name}</h3>
                             <p className="text-sm text-keysai-textBody">{pkg.description}</p>
                           </div>
-                          <div className="flex gap-2 w-full md:w-auto">
+                          <div className="flex flex-wrap gap-2 w-full md:w-auto">
                             <Button
                               variant="outline"
-                              size="sm"
+                              size={isMobile ? "sm" : "default"}
                               onClick={() => handleSavePackage(pkg.id)}
                               className="flex items-center gap-2"
                             >
@@ -492,7 +340,7 @@ const AdminPage = () => {
                             </Button>
                             <Button
                               variant="destructive"
-                              size="sm"
+                              size={isMobile ? "sm" : "default"}
                               onClick={() => handleDeletePackage(pkg.id)}
                               className="flex items-center gap-2"
                             >
@@ -533,30 +381,36 @@ const AdminPage = () => {
                         </div>
                         
                         <div>
-                          <Label>Features</Label>
+                          <div className="flex justify-between items-center mb-2">
+                            <Label>Features</Label>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleAddPackageFeature(pkg.id)}
+                              className="flex items-center gap-2"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Add Feature
+                            </Button>
+                          </div>
                           <div className="mt-2 space-y-2">
                             {pkg.features.map((feature, index) => (
                               <div key={index} className="flex items-center gap-2">
                                 <Input
                                   value={feature}
                                   onChange={(e) => handleUpdatePackageFeature(pkg.id, index, e.target.value)}
+                                  className="flex-grow"
                                 />
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleRemovePackageFeature(pkg.id, index)}
+                                  className="shrink-0"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
                             ))}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAddPackageFeature(pkg.id)}
-                            >
-                              Add Feature
-                            </Button>
                           </div>
                         </div>
                       </div>
@@ -852,13 +706,54 @@ const AdminPage = () => {
                             {sub.promo_end_date ? new Date(sub.promo_end_date).toLocaleDateString() : 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <Button 
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toast.info('Subscription management features coming soon!')}
-                            >
-                              Manage
-                            </Button>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  Manage
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <div className="flex justify-between items-center">
+                                    <DialogTitle>Manage Subscription</DialogTitle>
+                                    <DialogClose className="rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100">
+                                      <X className="h-4 w-4" />
+                                      <span className="sr-only">Close</span>
+                                    </DialogClose>
+                                  </div>
+                                </DialogHeader>
+                                <div className="space-y-4 pt-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <Label>Status</Label>
+                                      <select 
+                                        className="w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2" 
+                                        defaultValue={sub.status}
+                                      >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="suspended">Suspended</option>
+                                      </select>
+                                    </div>
+                                    <div>
+                                      <Label>Promo End Date</Label>
+                                      <Input 
+                                        type="date" 
+                                        defaultValue={sub.promo_end_date ? new Date(sub.promo_end_date).toISOString().split('T')[0] : ''} 
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end">
+                                    <Button onClick={() => toast.success('Subscription updated')}>
+                                      Save Changes
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </td>
                         </tr>
                       ))}

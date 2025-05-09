@@ -29,3 +29,13 @@ export interface Subscription {
   agent?: Agent;
   user?: UserProfile;
 }
+
+export interface PackageItem {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: number;
+  promoPrice?: number;
+  promoDuration?: number;
+  features: string[];
+}
