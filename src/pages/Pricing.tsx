@@ -1,300 +1,122 @@
-import React, { useState } from 'react';
+
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getAgents } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Check } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
-import { Check, X } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 const PricingPage = () => {
+  const { data: agents, isLoading } = useQuery({
+    queryKey: ['agents'],
+    queryFn: getAgents,
+  });
+  
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: '',
-    cardHolder: '',
-    expiryDate: '',
-    cvv: '',
-    billingAddress: '',
-    city: '',
-    postalCode: '',
-    country: ''
-  });
-
-  const handleGetStarted = (pkg: any) => {
+  
+  const handleSelectPlan = (agentId: string) => {
     if (!user) {
-      toast.error('Please log in to subscribe to a package');
-      navigate('/login');
+      toast.info('Please log in to subscribe to this plan.', {
+        action: {
+          label: 'Log In',
+          onClick: () => navigate('/login'),
+        },
+      });
       return;
     }
-    setSelectedPackage(pkg);
-    setShowPaymentForm(true);
+    
+    navigate(`/agents/${agentId}`);
   };
-
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically handle the payment processing
-    toast.success('Payment processed successfully!');
-    setShowPaymentForm(false);
-    navigate('/dashboard');
-  };
-
-  const handleCloseForm = () => {
-    setShowPaymentForm(false);
-    setSelectedPackage(null);
-  };
-
-  const packages = [
-    {
-      name: 'Pack Social',
-      description: 'Automate your social media engagement with our AI-powered social media assistant.',
-      basePrice: 300,
-      promoPrice: 250,
-      promoDuration: 2, // months
-      features: [
-        'AI-powered Instagram DM responses',
-        'Automated content scheduling',
-        'Sentiment analysis for messages',
-        'Custom reply templates',
-        'Follower engagement tracking'
-      ]
-    },
-    {
-      name: 'Pack Office',
-      description: 'Streamline your office workflows with intelligent scheduling and reminders.',
-      basePrice: 450,
-      features: [
-        'WhatsApp reminder automation',
-        'Meeting scheduler and organizer',
-        'Document processing and sorting',
-        'Email template management',
-        'Client communication tracking'
-      ]
-    },
-    {
-      name: 'Pack Manager',
-      description: 'Take control of your finances with automated bill management and expense tracking.',
-      basePrice: 500,
-      features: [
-        'Expense tracking and categorization',
-        'Bill payment automation',
-        'Invoice generation and sending',
-        'Financial reporting and analytics',
-        'Budget optimization suggestions'
-      ]
-    },
-    {
-      name: 'Pack Closer',
-      description: 'Convert leads to sales with automated follow-ups and personalized messaging.',
-      basePrice: 600,
-      features: [
-        'Lead qualification automation',
-        'Personalized follow-up sequences',
-        'Deal progress tracking',
-        'Proposal generation assistance',
-        'Sales performance analytics'
-      ]
-    }
-  ];
-
+  
+  if (isLoading) {
+    return (
+      <div className="py-24 flex justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+  
   return (
-    <div className="py-12">
+    <div className="py-12 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="heading-lg mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-keysai-textBody max-w-2xl mx-auto">
-            Choose the perfect automation package for your business needs. All packages include our core AI technology and 24/7 support.
+        <div className="text-center mb-16">
+          <h1 className="heading-lg mb-4">Pricing Plans</h1>
+          <p className="subtitle max-w-2xl mx-auto">
+            Choose the perfect AI agent for your business needs. All plans include our core automation features.
           </p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {packages.map((pkg) => (
-            <Card key={pkg.name} className="flex flex-col">
-              <CardHeader>
-                <CardTitle>{pkg.name}</CardTitle>
-                <CardDescription>{pkg.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="mb-6">
-                  <div className="text-3xl font-bold">
-                    {pkg.promoPrice ? (
-                      <>
-                        <span className="text-keysai-accent">{pkg.promoPrice}€</span>
-                        <span className="text-sm text-gray-500">/month</span>
-                        <div className="text-sm text-gray-500 mt-1">
-                          First {pkg.promoDuration} months
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Then {pkg.basePrice}€/month
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-keysai-accent">{pkg.basePrice}€</span>
-                        <span className="text-sm text-gray-500">/month</span>
-                      </>
-                    )}
-                  </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {agents?.map((agent) => (
+            <div key={agent.id} className="bg-white rounded-xl shadow-custom p-6 flex flex-col">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-keysai-accent mb-2">{agent.name}</h3>
+                <p className="text-keysai-textBody text-sm mb-6">{agent.description}</p>
+                
+                <div className="mt-auto mb-6">
+                  {agent.promo_price ? (
+                    <div>
+                      <p className="text-3xl font-bold text-keysai-accent">
+                        {agent.promo_price}€<span className="text-sm font-normal">/month</span>
+                      </p>
+                      <p className="text-sm text-gray-500 line-through">{agent.base_price}€/month</p>
+                      <p className="text-sm text-keysai-textBody">
+                        for first {agent.promo_duration} months
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-3xl font-bold text-keysai-accent">
+                      {agent.base_price}€<span className="text-sm font-normal">/month</span>
+                    </p>
+                  )}
                 </div>
-                <ul className="space-y-3">
-                  {pkg.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
+                
+                <ul className="space-y-3 mb-6">
+                  {/* Example features - ideally these would come from the database */}
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
+                    <span className="text-sm">24/7 Automated Responses</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
+                    <span className="text-sm">Custom Integration Settings</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
+                    <span className="text-sm">Usage Analytics Dashboard</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-keysai-accent mr-2 mt-0.5" />
+                    <span className="text-sm">Email Support</span>
+                  </li>
                 </ul>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  className="w-full bg-keysai-accent hover:bg-blue-600"
-                  onClick={() => handleGetStarted(pkg)}
-                >
-                  Get Started
-                </Button>
-              </CardFooter>
-            </Card>
+              </div>
+              
+              <Button 
+                className="w-full mt-auto" 
+                onClick={() => handleSelectPlan(agent.id)}
+              >
+                Choose Plan
+              </Button>
+            </div>
           ))}
         </div>
-      </div>
-
-      {/* Payment Form Modal */}
-      {showPaymentForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg p-4 max-w-md w-full mx-auto my-4 relative">
-            <button
-              onClick={handleCloseForm}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            
-            <div className="max-h-[calc(100vh-2rem)] overflow-y-auto pr-2">
-              <h2 className="text-xl font-bold mb-2">Complete Your Subscription</h2>
-              <p className="text-sm text-gray-600 mb-3">
-                You're subscribing to {selectedPackage.name} for {selectedPackage.promoPrice ? `${selectedPackage.promoPrice}€/month` : `${selectedPackage.basePrice}€/month`}
-              </p>
-
-              <form onSubmit={handlePaymentSubmit} className="space-y-2">
-                <div className="space-y-1">
-                  <Label htmlFor="cardNumber" className="text-sm">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    type="text"
-                    placeholder="1234 5678 9012 3456"
-                    value={paymentDetails.cardNumber}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, cardNumber: e.target.value })}
-                    required
-                    className="h-8"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="cardHolder" className="text-sm">Card Holder Name</Label>
-                  <Input
-                    id="cardHolder"
-                    type="text"
-                    placeholder="John Doe"
-                    value={paymentDetails.cardHolder}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, cardHolder: e.target.value })}
-                    required
-                    className="h-8"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="expiryDate" className="text-sm">Expiry Date</Label>
-                    <Input
-                      id="expiryDate"
-                      type="text"
-                      placeholder="MM/YY"
-                      value={paymentDetails.expiryDate}
-                      onChange={(e) => setPaymentDetails({ ...paymentDetails, expiryDate: e.target.value })}
-                      required
-                      className="h-8"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="cvv" className="text-sm">CVV</Label>
-                    <Input
-                      id="cvv"
-                      type="text"
-                      placeholder="123"
-                      value={paymentDetails.cvv}
-                      onChange={(e) => setPaymentDetails({ ...paymentDetails, cvv: e.target.value })}
-                      required
-                      className="h-8"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="billingAddress" className="text-sm">Billing Address</Label>
-                  <Input
-                    id="billingAddress"
-                    type="text"
-                    placeholder="123 Street Name"
-                    value={paymentDetails.billingAddress}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, billingAddress: e.target.value })}
-                    required
-                    className="h-8"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="city" className="text-sm">City</Label>
-                    <Input
-                      id="city"
-                      type="text"
-                      placeholder="City"
-                      value={paymentDetails.city}
-                      onChange={(e) => setPaymentDetails({ ...paymentDetails, city: e.target.value })}
-                      required
-                      className="h-8"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="postalCode" className="text-sm">Postal Code</Label>
-                    <Input
-                      id="postalCode"
-                      type="text"
-                      placeholder="12345"
-                      value={paymentDetails.postalCode}
-                      onChange={(e) => setPaymentDetails({ ...paymentDetails, postalCode: e.target.value })}
-                      required
-                      className="h-8"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="country" className="text-sm">Country</Label>
-                  <Input
-                    id="country"
-                    type="text"
-                    placeholder="Country"
-                    value={paymentDetails.country}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, country: e.target.value })}
-                    required
-                    className="h-8"
-                  />
-                </div>
-
-                <Button type="submit" className="w-full bg-keysai-accent hover:bg-blue-600 h-8 mt-3">
-                  Complete Payment
-                </Button>
-              </form>
-            </div>
-          </div>
+        
+        <div className="bg-gray-50 rounded-xl p-8 text-center">
+          <h3 className="text-xl font-bold mb-2">Need a custom solution?</h3>
+          <p className="text-keysai-textBody mb-4">
+            Contact our team for a tailored AI solution that fits your specific business requirements.
+          </p>
+          <Link to="/contact">
+            <Button variant="outline">Contact Us</Button>
+          </Link>
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default PricingPage; 
+export default PricingPage;

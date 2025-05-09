@@ -1,51 +1,49 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+
+const formSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  subject: z.string().min(5, { message: 'Subject must be at least 5 characters.' }),
+  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
+});
+
+type ContactFormValues = z.infer<typeof formSchema>;
 
 const ContactPage = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.email || !formData.message) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    
+  const onSubmit = async (values: ContactFormValues) => {
     setIsSubmitting(true);
-    
     try {
-      // This would normally send data to a backend API
-      // For now, we'll just simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // In a real application, you would send this data to your API
+      console.log('Form submitted:', values);
       
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-      });
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      toast.success('Message sent successfully! We will get back to you soon.');
+      form.reset();
     } catch (error) {
-      console.error('Error sending message:', error);
       toast.error('Failed to send message. Please try again later.');
     } finally {
       setIsSubmitting(false);
@@ -53,128 +51,135 @@ const ContactPage = () => {
   };
 
   return (
-    <div className="py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="heading-lg mb-4">Contact Us</h1>
-          <p className="subtitle">
-            Have questions about Keys-AI? We're here to help!
+    <div className="py-12 md:py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h1 className="heading-lg mb-4">Get in Touch</h1>
+          <p className="subtitle max-w-2xl mx-auto">
+            Have questions about our AI agents or need help implementing a custom solution? Contact our team for assistance.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-white rounded-xl shadow-custom p-8">
-            <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Your name"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-custom p-8">
+              <h3 className="text-xl font-bold mb-6">Send Us a Message</h3>
               
-              <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your.email@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  name="subject"
-                  placeholder="How can we help you?"
-                  value={formData.subject}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="message">Message *</Label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  placeholder="Your message"
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <Button 
-                className="w-full bg-keysai-accent hover:bg-blue-600"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </Button>
-              
-              <p className="text-sm text-keysai-textBody">
-                * Required fields
-              </p>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Your Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="john@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="subject"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Subject</FormLabel>
+                        <FormControl>
+                          <Input placeholder="What's this regarding?" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Message</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Tell us how we can help you..." 
+                            className="min-h-[150px]"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </Button>
+                </form>
+              </Form>
             </div>
           </div>
           
-          {/* Contact Information */}
           <div>
-            <div className="bg-white rounded-xl shadow-custom p-8 mb-8">
-              <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-keysai-accent">Email</h3>
-                  <p className="text-keysai-textBody">info@keys-ai.com</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-keysai-accent">Phone</h3>
-                  <p className="text-keysai-textBody">(123) 456-7890</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold text-keysai-accent">Hours</h3>
-                  <p className="text-keysai-textBody">Monday - Friday: 9am - 6pm CET</p>
-                </div>
-              </div>
-            </div>
-            
             <div className="bg-white rounded-xl shadow-custom p-8">
-              <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+              <h3 className="text-xl font-bold mb-6">Contact Information</h3>
               
               <div className="space-y-6">
-                <div>
-                  <h3 className="font-semibold">How quickly can I get started with Keys-AI?</h3>
-                  <p className="text-keysai-textBody">
-                    You can sign up and subscribe to an agent in minutes. Depending on the complexity of your setup, you might be fully operational within a few hours.
-                  </p>
+                <div className="flex">
+                  <Mail className="h-5 w-5 text-keysai-accent mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-semibold">Email</h4>
+                    <p className="text-keysai-textBody">support@keys-ai.com</p>
+                  </div>
                 </div>
                 
-                <div>
-                  <h3 className="font-semibold">Is my data secure with Keys-AI?</h3>
-                  <p className="text-keysai-textBody">
-                    Yes, we implement industry-standard security measures to protect your data. We never share your information with third parties.
-                  </p>
+                <div className="flex">
+                  <Phone className="h-5 w-5 text-keysai-accent mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-semibold">Phone</h4>
+                    <p className="text-keysai-textBody">+1 (555) 123-4567</p>
+                  </div>
                 </div>
                 
-                <div>
-                  <h3 className="font-semibold">Can I cancel my subscription anytime?</h3>
-                  <p className="text-keysai-textBody">
-                    Yes, all our subscriptions are flexible and can be cancelled at any time without penalties.
-                  </p>
+                <div className="flex">
+                  <MapPin className="h-5 w-5 text-keysai-accent mt-1 mr-3" />
+                  <div>
+                    <h4 className="font-semibold">Office Location</h4>
+                    <p className="text-keysai-textBody">
+                      123 AI Innovation Ave<br />
+                      Tech City, TC 12345<br />
+                      United States
+                    </p>
+                  </div>
                 </div>
+              </div>
+              
+              <hr className="my-6 border-gray-200" />
+              
+              <div>
+                <h4 className="font-semibold mb-3">Business Hours</h4>
+                <p className="text-keysai-textBody mb-1">Monday - Friday: 9am - 5pm EST</p>
+                <p className="text-keysai-textBody">Saturday - Sunday: Closed</p>
+                <p className="mt-4 text-sm text-keysai-textBody">
+                  Our AI agents are available 24/7 for subscribers.
+                </p>
               </div>
             </div>
           </div>

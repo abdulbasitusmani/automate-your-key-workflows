@@ -2,79 +2,64 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Bell, Home } from 'lucide-react';
+import { MessageSquare, Bell, Home as HomeIcon, DollarSign } from 'lucide-react';
 import StepCard from '@/components/StepCard';
 import FeatureCard from '@/components/FeatureCard';
+import AgentHeroCard from '@/components/AgentHeroCard';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { getAgents } from '@/lib/api';
 
 const HomePage = () => {
   const { user } = useAuth();
+  const { data: agents, isLoading } = useQuery({
+    queryKey: ['agents-home'],
+    queryFn: getAgents,
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="bg-keysai-background py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="heading-xl mb-6">
-                Automate Your Business Workflows
-              </h1>
-              <p className="subtitle mb-8">
-                Keys-AI gives you the power to automate Instagram DMs, WhatsApp reminders, and bill management with intelligent AI workflows.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                {!user ? (
-                  <>
-                    <Link to="/signup">
-                      <Button className="btn-primary">Get Started</Button>
-                    </Link>
-                    <Link to="/login">
-                      <Button variant="outline" className="btn-secondary">Login</Button>
-                    </Link>
-                  </>
-                ) : (
-                  <Link to="/agents">
-                    <Button className="btn-primary">View Agents</Button>
+          <div className="text-center mb-12">
+            <h1 className="heading-xl mb-6">
+              Automate Your Business Workflows
+            </h1>
+            <p className="subtitle mb-8 max-w-3xl mx-auto">
+              Keys-AI gives you the power to automate Instagram DMs, WhatsApp reminders, and bill management with intelligent AI workflows.
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              {!user ? (
+                <>
+                  <Link to="/signup">
+                    <Button className="btn-primary">Get Started</Button>
                   </Link>
-                )}
-              </div>
+                  <Link to="/login">
+                    <Button variant="outline" className="btn-secondary">Login</Button>
+                  </Link>
+                </>
+              ) : (
+                <Link to="/agents">
+                  <Button className="btn-primary">View Agents</Button>
+                </Link>
+              )}
             </div>
-            
-            <div>
-              <div className="bg-white rounded-xl shadow-custom p-8">
-                <h3 className="text-xl font-bold mb-6 text-keysai-accent">AI-Powered Automations</h3>
-                <ul className="space-y-6">
-                  <li className="flex">
-                    <div className="bg-blue-100 p-2 rounded-full text-keysai-accent mr-4 h-min">
-                      <MessageSquare size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Instagram DM Automation</h4>
-                      <p className="text-keysai-textBody text-sm">Respond to messages with AI.</p>
-                    </div>
-                  </li>
-                  <li className="flex">
-                    <div className="bg-blue-100 p-2 rounded-full text-keysai-accent mr-4 h-min">
-                      <Bell size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">WhatsApp Reminders</h4>
-                      <p className="text-keysai-textBody text-sm">Schedule and send automatically.</p>
-                    </div>
-                  </li>
-                  <li className="flex">
-                    <div className="bg-blue-100 p-2 rounded-full text-keysai-accent mr-4 h-min">
-                      <Home size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Bill Management</h4>
-                      <p className="text-keysai-textBody text-sm">Never miss a payment with smart scheduling.</p>
-                    </div>
-                  </li>
-                </ul>
+          </div>
+          
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-center mb-8">Our AI Agents</h2>
+            {isLoading ? (
+              <div className="flex justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {agents?.slice(0, 4).map((agent) => (
+                  <AgentHeroCard key={agent.id} agent={agent} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -131,12 +116,12 @@ const HomePage = () => {
               description="Manage schedules, automate reminders, and organize your workspace efficiently."
             />
             <FeatureCard 
-              icon={<Home size={24} />}
+              icon={<HomeIcon size={24} />}
               title="Pack Manager" 
               description="Track expenses, handle invoices, and optimize your business operations."
             />
             <FeatureCard 
-              icon={<MessageSquare size={24} />}
+              icon={<DollarSign size={24} />}
               title="Pack Closer" 
               description="Convert leads to sales with automated follow-ups and personalized messaging."
             />

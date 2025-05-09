@@ -17,12 +17,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import AddAgentForm from '@/components/AddAgentForm';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminPage = () => {
   const navigate = useNavigate();
   const { user, role } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
+  const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
   
   // Contact Information State
   const [contactInfo, setContactInfo] = useState({
@@ -43,64 +55,22 @@ const AdminPage = () => {
     }
   });
 
-  // Agents State
-  const [agents, setAgents] = useState([
-    {
-      id: 1,
-      name: 'Pack Social',
-      description: 'Automate your social media engagement with our AI-powered social media assistant.',
-      basePrice: 300,
-      promoPrice: 250,
-      promoDuration: 2, // months
-      features: [
-        'AI-powered Instagram DM responses',
-        'Automated content scheduling',
-        'Sentiment analysis for messages',
-        'Custom reply templates',
-        'Follower engagement tracking'
-      ]
+  // Fetch agents from Supabase
+  const { data: adminAgents, isLoading: agentsLoading } = useQuery({
+    queryKey: ['admin-agents'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
     },
-    {
-      id: 2,
-      name: 'Pack Office',
-      description: 'Streamline your office workflows with intelligent scheduling and reminders.',
-      basePrice: 450,
-      features: [
-        'WhatsApp reminder automation',
-        'Meeting scheduler and organizer',
-        'Document processing and sorting',
-        'Email template management',
-        'Client communication tracking'
-      ]
-    },
-    {
-      id: 3,
-      name: 'Pack Manager',
-      description: 'Take control of your finances with automated bill management and expense tracking.',
-      basePrice: 500,
-      features: [
-        'Expense tracking and categorization',
-        'Bill payment automation',
-        'Invoice generation and sending',
-        'Financial reporting and analytics',
-        'Budget optimization suggestions'
-      ]
-    },
-    {
-      id: 4,
-      name: 'Pack Closer',
-      description: 'Convert leads to sales with automated follow-ups and personalized messaging.',
-      basePrice: 600,
-      features: [
-        'Lead qualification automation',
-        'Personalized follow-up sequences',
-        'Deal progress tracking',
-        'Proposal generation assistance',
-        'Sales performance analytics'
-      ]
-    }
-  ]);
-
+    enabled: !!user && role === 'admin',
+  });
+  
+  // Packages State
   const [packages, setPackages] = useState([
     {
       id: 1,
@@ -108,7 +78,7 @@ const AdminPage = () => {
       description: 'Automate your social media engagement with our AI-powered social media assistant.',
       basePrice: 300,
       promoPrice: 250,
-      promoDuration: 2,
+      promoDuration: 2, // months
       features: [
         'AI-powered Instagram DM responses',
         'Automated content scheduling',
@@ -197,15 +167,48 @@ const AdminPage = () => {
     setIsEditing(false);
   };
 
-  const handleSaveAgent = (agentId: number) => {
-    // Here you would typically make an API call to update the agent
-    toast.success('Agent updated successfully!');
+  const handleSaveAgent = async (agentId: string, updatedData: any) => {
+    try {
+      const { error } = await supabase
+        .from('agents')
+        .update(updatedData)
+        .eq('id', agentId);
+      
+      if (error) throw error;
+      
+      toast.success('Agent updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update agent');
+    }
   };
 
-  const handleDeleteAgent = (agentId: number) => {
-    // Here you would typically make an API call to delete the agent
-    setAgents(agents.filter(agent => agent.id !== agentId));
-    toast.success('Agent deleted successfully!');
+  const handleDeleteAgent = async (agentId: string) => {
+    try {
+      // Check if there are any subscriptions using this agent
+      const { data: relatedSubscriptions } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('agent_id', agentId);
+        
+      if (relatedSubscriptions && relatedSubscriptions.length > 0) {
+        return toast.error('Cannot delete agent with active subscriptions');
+      }
+      
+      const { error } = await supabase
+        .from('agents')
+        .delete()
+        .eq('id', agentId);
+      
+      if (error) throw error;
+      
+      toast.success('Agent deleted successfully!');
+      queryClient.invalidateQueries({ queryKey: ['admin-agents'] });
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete agent');
+    }
   };
 
   const handleUpdateUserRole = async (userId: string, newRole: string) => {
@@ -251,134 +254,134 @@ const AdminPage = () => {
               <CardContent className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-bold">Agent Management</h2>
-                  <Button 
-                    onClick={() => toast.info('Agent creation feature coming soon!')}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add New Agent
-                  </Button>
+                  <Dialog open={isAddAgentOpen} onOpenChange={setIsAddAgentOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add New Agent
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Add New Agent</DialogTitle>
+                        <DialogDescription>
+                          Create a new AI agent for your customers to subscribe to.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <AddAgentForm onSuccess={() => setIsAddAgentOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 
                 <div className="space-y-6">
-                  {agents.map((agent) => (
-                    <Card key={agent.id} className="p-4">
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-lg font-semibold">{agent.name}</h3>
-                            <p className="text-sm text-keysai-textBody">{agent.description}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSaveAgent(agent.id)}
-                              className="flex items-center gap-2"
-                            >
-                              <Save className="h-4 w-4" />
-                              Save
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteAgent(agent.id)}
-                              className="flex items-center gap-2"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Base Price (€/month)</Label>
-                            <Input
-                              type="number"
-                              value={agent.basePrice}
-                              onChange={(e) => {
-                                const updatedAgents = agents.map(a => 
-                                  a.id === agent.id ? { ...a, basePrice: Number(e.target.value) } : a
-                                );
-                                setAgents(updatedAgents);
-                              }}
-                            />
-                          </div>
-                          {agent.promoPrice && (
+                  {agentsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
+                    </div>
+                  ) : !adminAgents || adminAgents.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No agents found. Create your first agent to get started!
+                    </div>
+                  ) : (
+                    adminAgents.map((agent) => (
+                      <Card key={agent.id} className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-start">
                             <div>
-                              <Label>Promo Price (€/month)</Label>
+                              <h3 className="text-lg font-semibold">{agent.name}</h3>
+                              <p className="text-sm text-keysai-textBody">{agent.description}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleSaveAgent(agent.id, {
+                                  name: agent.name,
+                                  description: agent.description,
+                                  base_price: agent.base_price,
+                                  promo_price: agent.promo_price,
+                                  promo_duration: agent.promo_duration,
+                                })}
+                                className="flex items-center gap-2"
+                              >
+                                <Save className="h-4 w-4" />
+                                Save
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteAgent(agent.id)}
+                                className="flex items-center gap-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>Base Price (€/month)</Label>
                               <Input
                                 type="number"
-                                value={agent.promoPrice}
+                                value={agent.base_price}
                                 onChange={(e) => {
-                                  const updatedAgents = agents.map(a => 
-                                    a.id === agent.id ? { ...a, promoPrice: Number(e.target.value) } : a
+                                  const updatedAgents = adminAgents.map(a => 
+                                    a.id === agent.id ? { ...a, base_price: Number(e.target.value) } : a
                                   );
-                                  setAgents(updatedAgents);
+                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
                                 }}
                               />
                             </div>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <Label>Features</Label>
-                          <div className="mt-2 space-y-2">
-                            {agent.features.map((feature, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <Input
-                                  value={feature}
-                                  onChange={(e) => {
-                                    const updatedAgents = agents.map(a => {
-                                      if (a.id === agent.id) {
-                                        const updatedFeatures = [...a.features];
-                                        updatedFeatures[index] = e.target.value;
-                                        return { ...a, features: updatedFeatures };
-                                      }
-                                      return a;
-                                    });
-                                    setAgents(updatedAgents);
-                                  }}
-                                />
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    const updatedAgents = agents.map(a => {
-                                      if (a.id === agent.id) {
-                                        const updatedFeatures = a.features.filter((_, i) => i !== index);
-                                        return { ...a, features: updatedFeatures };
-                                      }
-                                      return a;
-                                    });
-                                    setAgents(updatedAgents);
-                                  }}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const updatedAgents = agents.map(a => {
-                                  if (a.id === agent.id) {
-                                    return { ...a, features: [...a.features, ''] };
-                                  }
-                                  return a;
-                                });
-                                setAgents(updatedAgents);
+                            <div>
+                              <Label>Promotional Price (€/month)</Label>
+                              <Input
+                                type="number"
+                                value={agent.promo_price || ''}
+                                onChange={(e) => {
+                                  const updatedAgents = adminAgents.map(a => 
+                                    a.id === agent.id ? { ...a, promo_price: e.target.value ? Number(e.target.value) : null } : a
+                                  );
+                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
+                                }}
+                                placeholder="Optional"
+                              />
+                            </div>
+                            <div>
+                              <Label>Promotional Duration (months)</Label>
+                              <Input
+                                type="number"
+                                value={agent.promo_duration || ''}
+                                onChange={(e) => {
+                                  const updatedAgents = adminAgents.map(a => 
+                                    a.id === agent.id ? { ...a, promo_duration: e.target.value ? Number(e.target.value) : null } : a
+                                  );
+                                  queryClient.setQueryData(['admin-agents'], updatedAgents);
+                                }}
+                                placeholder="Optional"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label>Description</Label>
+                            <Textarea
+                              value={agent.description}
+                              onChange={(e) => {
+                                const updatedAgents = adminAgents.map(a => 
+                                  a.id === agent.id ? { ...a, description: e.target.value } : a
+                                );
+                                queryClient.setQueryData(['admin-agents'], updatedAgents);
                               }}
-                            >
-                              Add Feature
-                            </Button>
+                              rows={3}
+                            />
                           </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
