@@ -1,9 +1,14 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { user, role, signOut } = useAuth();
@@ -28,6 +33,9 @@ const Navbar = () => {
               <Link to="/agents" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
                 Agents
               </Link>
+              <Link to="/pricing" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+                Pricing
+              </Link>
               <Link to="/about" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
                 About
               </Link>
@@ -36,7 +44,8 @@ const Navbar = () => {
               </Link>
             </div>
           </div>
-          <div className="hidden sm:flex sm:items-center sm:space-x-2">
+          
+          <div className="flex items-center">
             {user ? (
               <>
                 <Link to="/dashboard">
@@ -51,9 +60,31 @@ const Navbar = () => {
                     </Button>
                   </Link>
                 )}
-                <Button variant="ghost" onClick={signOut}>
-                  Log Out
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-gray-200 hover:bg-gray-50">
+                      <User className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={signOut} className="flex items-center text-red-600">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
@@ -101,6 +132,13 @@ const Navbar = () => {
             Agents
           </Link>
           <Link 
+            to="/pricing" 
+            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Pricing
+          </Link>
+          <Link 
             to="/about" 
             className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
             onClick={() => setMobileMenuOpen(false)}
@@ -132,14 +170,28 @@ const Navbar = () => {
                   Admin Panel
                 </Link>
               )}
+              <Link 
+                to="/profile" 
+                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Profile
+              </Link>
+              <Link 
+                to="/settings" 
+                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Settings
+              </Link>
               <button
                 onClick={() => {
                   signOut();
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-gray-50"
               >
-                Log Out
+                Logout
               </button>
             </>
           ) : (

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -140,12 +139,12 @@ const DashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button 
                 variant="outline" 
-                className="p-6 h-auto"
+                className="p-4 h-auto text-left hover:bg-gray-50"
                 onClick={() => navigate('/agents')}
               >
-                <div className="text-left">
-                  <h4 className="font-semibold mb-1 text-keysai-accent">Pack Social</h4>
-                  <p className="text-sm text-keysai-textBody">
+                <div className="w-full">
+                  <h4 className="font-semibold mb-2 text-keysai-accent text-base">Pack Social</h4>
+                  <p className="text-sm text-keysai-textBody line-clamp-3">
                     Automate your social media engagement with our AI-powered social media assistant.
                   </p>
                 </div>
@@ -153,12 +152,12 @@ const DashboardPage = () => {
               
               <Button 
                 variant="outline" 
-                className="p-6 h-auto"
+                className="p-4 h-auto text-left hover:bg-gray-50"
                 onClick={() => navigate('/agents')}
               >
-                <div className="text-left">
-                  <h4 className="font-semibold mb-1 text-keysai-accent">Pack Office</h4>
-                  <p className="text-sm text-keysai-textBody">
+                <div className="w-full">
+                  <h4 className="font-semibold mb-2 text-keysai-accent text-base">Pack Office</h4>
+                  <p className="text-sm text-keysai-textBody line-clamp-3">
                     Streamline your office workflows with intelligent scheduling and reminders.
                   </p>
                 </div>
@@ -166,12 +165,12 @@ const DashboardPage = () => {
               
               <Button 
                 variant="outline" 
-                className="p-6 h-auto"
+                className="p-4 h-auto text-left hover:bg-gray-50"
                 onClick={() => navigate('/agents')}
               >
-                <div className="text-left">
-                  <h4 className="font-semibold mb-1 text-keysai-accent">Pack Manager</h4>
-                  <p className="text-sm text-keysai-textBody">
+                <div className="w-full">
+                  <h4 className="font-semibold mb-2 text-keysai-accent text-base">Pack Manager</h4>
+                  <p className="text-sm text-keysai-textBody line-clamp-3">
                     Take control of your finances with automated bill management and expense tracking.
                   </p>
                 </div>

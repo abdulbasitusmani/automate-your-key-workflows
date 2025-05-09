@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Agent, Subscription, UserProfile } from '@/types';
 
@@ -150,4 +149,16 @@ export async function getAllSubscriptions(): Promise<Subscription[]> {
   }
   
   return (data || []) as Subscription[];
+}
+
+export async function updateUserRole(userId: string, newRole: string): Promise<void> {
+  const { error } = await supabase
+    .from('users')
+    .update({ role: newRole })
+    .eq('id', userId);
+  
+  if (error) {
+    console.error('Error updating user role:', error);
+    throw error;
+  }
 }
