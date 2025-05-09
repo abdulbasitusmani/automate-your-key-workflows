@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AgentCard from '@/components/AgentCard';
 import { Agent } from '@/types';
 import { getAgents } from '@/lib/api';
@@ -33,16 +33,16 @@ const AgentsPage = () => {
   }
 
   return (
-    <div className="py-12">
+    <div className="py-8 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="heading-lg mb-4">Our AI Agents</h1>
-          <p className="subtitle max-w-2xl mx-auto">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-keysai-textDark">Our AI Agents</h1>
+          <p className="text-lg text-keysai-textBody max-w-2xl mx-auto">
             Choose from our specialized AI agents to automate your business workflows and increase productivity.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {agents?.map((agent) => (
             <AgentCard key={agent.id} agent={agent} />
           ))}

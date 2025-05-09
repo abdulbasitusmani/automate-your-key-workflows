@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,18 @@ import {
 
 import AddAgentForm from '@/components/AddAgentForm';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Define the type for package items
+interface PackageItem {
+  id: number;
+  name: string;
+  description: string;
+  basePrice: number;
+  promoPrice?: number;
+  promoDuration?: number;
+  features: string[];
+}
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -35,6 +48,7 @@ const AdminPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const queryClient = useQueryClient();
   const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   // Contact Information State
   const [contactInfo, setContactInfo] = useState({
@@ -71,7 +85,7 @@ const AdminPage = () => {
   });
   
   // Packages State
-  const [packages, setPackages] = useState([
+  const [packages, setPackages] = useState<PackageItem[]>([
     {
       id: 1,
       name: 'Pack Social',
@@ -229,8 +243,63 @@ const AdminPage = () => {
 
   const handleDeletePackage = (packageId: number) => {
     // Here you would typically make an API call to delete the package
-    setPackages(packages.filter(pkg => pkg.id !== packageId));
+    const updatedPackages = packages.filter(pkg => pkg.id !== packageId);
+    setPackages(updatedPackages);
     toast.success('Package deleted successfully!');
+  };
+
+  const handleAddPackageFeature = (packageId: number) => {
+    const updatedPackages = packages.map(p => {
+      if (p.id === packageId) {
+        return {
+          ...p,
+          features: [...p.features, '']
+        };
+      }
+      return p;
+    });
+    setPackages(updatedPackages);
+  };
+
+  const handleUpdatePackageFeature = (packageId: number, featureIndex: number, value: string) => {
+    const updatedPackages = packages.map(p => {
+      if (p.id === packageId) {
+        const updatedFeatures = [...p.features];
+        updatedFeatures[featureIndex] = value;
+        return {
+          ...p,
+          features: updatedFeatures
+        };
+      }
+      return p;
+    });
+    setPackages(updatedPackages);
+  };
+
+  const handleRemovePackageFeature = (packageId: number, featureIndex: number) => {
+    const updatedPackages = packages.map(p => {
+      if (p.id === packageId) {
+        return {
+          ...p,
+          features: p.features.filter((_, i) => i !== featureIndex)
+        };
+      }
+      return p;
+    });
+    setPackages(updatedPackages);
+  };
+
+  const handleUpdatePackageField = (packageId: number, field: keyof PackageItem, value: any) => {
+    const updatedPackages = packages.map(p => {
+      if (p.id === packageId) {
+        return {
+          ...p,
+          [field]: value
+        };
+      }
+      return p;
+    });
+    setPackages(updatedPackages);
   };
 
   return (
@@ -239,11 +308,11 @@ const AdminPage = () => {
         <h1 className="heading-lg mb-8">Admin Panel</h1>
         
         <Tabs defaultValue="agents" className="space-y-6">
-          <TabsList className="mb-8">
+          <TabsList className="mb-8 flex flex-wrap overflow-auto">
             <TabsTrigger value="agents">Agents</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="contact">Contact Information</TabsTrigger>
-            <TabsTrigger value="about">About Section</TabsTrigger>
+            <TabsTrigger value="contact">Contact Info</TabsTrigger>
+            <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
           </TabsList>
@@ -288,12 +357,12 @@ const AdminPage = () => {
                     adminAgents.map((agent) => (
                       <Card key={agent.id} className="p-4">
                         <div className="space-y-4">
-                          <div className="flex justify-between items-start">
-                            <div>
+                          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                            <div className="w-full md:w-3/4">
                               <h3 className="text-lg font-semibold">{agent.name}</h3>
                               <p className="text-sm text-keysai-textBody">{agent.description}</p>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full md:w-auto">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -406,12 +475,12 @@ const AdminPage = () => {
                   {packages.map((pkg) => (
                     <Card key={pkg.id} className="p-4">
                       <div className="space-y-4">
-                        <div className="flex justify-between items-start">
-                          <div>
+                        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                          <div className="w-full md:w-3/4">
                             <h3 className="text-lg font-semibold">{pkg.name}</h3>
                             <p className="text-sm text-keysai-textBody">{pkg.description}</p>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 w-full md:w-auto">
                             <Button
                               variant="outline"
                               size="sm"
@@ -439,12 +508,7 @@ const AdminPage = () => {
                             <Input
                               type="number"
                               value={pkg.basePrice}
-                              onChange={(e) => {
-                                const updatedPackages = packages.map(p => 
-                                  p.id === pkg.id ? { ...p, basePrice: Number(e.target.value) } : p
-                                );
-                                setPackages(updatedPackages);
-                              }}
+                              onChange={(e) => handleUpdatePackageField(pkg.id, 'basePrice', Number(e.target.value))}
                             />
                           </div>
                           <div>
@@ -452,12 +516,7 @@ const AdminPage = () => {
                             <Input
                               type="number"
                               value={pkg.promoPrice || ''}
-                              onChange={(e) => {
-                                const updatedPackages = packages.map(p => 
-                                  p.id === pkg.id ? { ...p, promoPrice: Number(e.target.value) } : p
-                                );
-                                setPackages(updatedPackages);
-                              }}
+                              onChange={(e) => handleUpdatePackageField(pkg.id, 'promoPrice', e.target.value ? Number(e.target.value) : undefined)}
                               placeholder="Optional"
                             />
                           </div>
@@ -467,12 +526,7 @@ const AdminPage = () => {
                               <Input
                                 type="number"
                                 value={pkg.promoDuration || ''}
-                                onChange={(e) => {
-                                  const updatedPackages = packages.map(p => 
-                                    p.id === pkg.id ? { ...p, promoDuration: Number(e.target.value) } : p
-                                  );
-                                  setPackages(updatedPackages);
-                                }}
+                                onChange={(e) => handleUpdatePackageField(pkg.id, 'promoDuration', e.target.value ? Number(e.target.value) : undefined)}
                               />
                             </div>
                           )}
@@ -485,31 +539,12 @@ const AdminPage = () => {
                               <div key={index} className="flex items-center gap-2">
                                 <Input
                                   value={feature}
-                                  onChange={(e) => {
-                                    const updatedPackages = packages.map(p => {
-                                      if (p.id === pkg.id) {
-                                        const updatedFeatures = [...p.features];
-                                        updatedFeatures[index] = e.target.value;
-                                        return { ...p, features: updatedFeatures };
-                                      }
-                                      return p;
-                                    });
-                                    setPackages(updatedPackages);
-                                  }}
+                                  onChange={(e) => handleUpdatePackageFeature(pkg.id, index, e.target.value)}
                                 />
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => {
-                                    const updatedPackages = packages.map(p => {
-                                      if (p.id === pkg.id) {
-                                        const updatedFeatures = p.features.filter((_, i) => i !== index);
-                                        return { ...p, features: updatedFeatures };
-                                      }
-                                      return p;
-                                    });
-                                    setPackages(updatedPackages);
-                                  }}
+                                  onClick={() => handleRemovePackageFeature(pkg.id, index)}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -518,15 +553,7 @@ const AdminPage = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                const updatedPackages = packages.map(p => {
-                                  if (p.id === pkg.id) {
-                                    return { ...p, features: [...p.features, ''] };
-                                  }
-                                  return p;
-                                });
-                                setPackages(updatedPackages);
-                              }}
+                              onClick={() => handleAddPackageFeature(pkg.id)}
                             >
                               Add Feature
                             </Button>

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Agent, Subscription, UserProfile } from '@/types';
 
@@ -112,7 +113,13 @@ export async function createUserProfile(profile: {
 }): Promise<void> {
   const { error } = await supabase
     .from('users')
-    .insert(profile);
+    .insert({
+      id: profile.id,
+      email: profile.email,
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      role: profile.role || 'user'
+    });
   
   if (error) {
     console.error('Error creating user profile:', error);
