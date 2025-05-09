@@ -37,9 +37,39 @@
 
     --radius: 0.5rem;
   }
+ 
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 217 91% 60%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
 
   body {
-    @apply bg-keysai-background font-sans text-keysai-textDark;
+    @apply bg-keysai-background font-sans text-keysai-textDark dark:bg-gray-900 dark:text-white;
   }
 }
 
@@ -49,26 +79,26 @@
   }
 
   .btn-secondary {
-    @apply bg-white text-keysai-accent border border-keysai-accent px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors shadow-md;
+    @apply bg-white text-keysai-accent border border-keysai-accent px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors shadow-md dark:bg-gray-800 dark:border-blue-500 dark:hover:bg-gray-700;
   }
 
   .heading-xl {
-    @apply text-4xl md:text-5xl font-bold text-keysai-textDark;
+    @apply text-4xl md:text-5xl font-bold text-keysai-textDark dark:text-white;
   }
 
   .heading-lg {
-    @apply text-3xl md:text-4xl font-bold text-keysai-textDark;
+    @apply text-3xl md:text-4xl font-bold text-keysai-textDark dark:text-white;
   }
 
   .heading-md {
-    @apply text-2xl md:text-3xl font-bold text-keysai-textDark;
+    @apply text-2xl md:text-3xl font-bold text-keysai-textDark dark:text-white;
   }
 
   .subtitle {
-    @apply text-lg text-keysai-textBody;
+    @apply text-lg text-keysai-textBody dark:text-gray-300;
   }
 
   .card-shadow {
-    @apply shadow-custom rounded-xl;
+    @apply shadow-custom rounded-xl dark:bg-gray-800 dark:border dark:border-gray-700;
   }
 }

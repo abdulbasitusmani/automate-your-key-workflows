@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -6,12 +7,39 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
+import { useLanguage, Language } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
 import { Bell, Globe, Lock, Moon, Shield } from 'lucide-react';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
+
+  // State for form fields
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(false);
+  const [activityLog, setActivityLog] = useState(true);
+  const [timeZone, setTimeZone] = useState('utc');
+  
+  // Handle theme change
+  const handleThemeChange = (value: string) => {
+    setTheme(value as 'light' | 'dark' | 'system');
+  };
+
+  // Handle language change
+  const handleLanguageChange = (value: string) => {
+    setLanguage(value as Language);
+  };
+
+  // Handle form submission
+  const handleSaveChanges = () => {
+    // In a real application, you would save these settings to a database
+    toast.success(t('settings.success'));
+  };
 
   // Redirect if not logged in
   React.useEffect(() => {
@@ -36,25 +64,31 @@ const SettingsPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Notifications
+                {t('settings.notifications')}
               </CardTitle>
-              <CardDescription>Manage your notification preferences</CardDescription>
+              <CardDescription>{t('settings.notifications.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-keysai-textBody">Receive email updates about your account</p>
+                    <Label>{t('settings.email')}</Label>
+                    <p className="text-sm text-keysai-textBody">{t('settings.email.description')}</p>
                   </div>
-                  <Switch />
+                  <Switch 
+                    checked={emailNotifications}
+                    onCheckedChange={setEmailNotifications}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Push Notifications</Label>
-                    <p className="text-sm text-keysai-textBody">Receive push notifications in your browser</p>
+                    <Label>{t('settings.push')}</Label>
+                    <p className="text-sm text-keysai-textBody">{t('settings.push.description')}</p>
                   </div>
-                  <Switch />
+                  <Switch
+                    checked={pushNotifications}
+                    onCheckedChange={setPushNotifications}
+                  />
                 </div>
               </div>
             </CardContent>
@@ -65,22 +99,22 @@ const SettingsPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Moon className="h-5 w-5" />
-                Appearance
+                {t('settings.appearance')}
               </CardTitle>
-              <CardDescription>Customize how Keys-AI looks on your device</CardDescription>
+              <CardDescription>{t('settings.appearance.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Theme</Label>
-                  <Select defaultValue="system">
+                  <Label>{t('settings.theme')}</Label>
+                  <Select value={theme} onValueChange={handleThemeChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select theme" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="light">{t('settings.light')}</SelectItem>
+                      <SelectItem value="dark">{t('settings.dark')}</SelectItem>
+                      <SelectItem value="system">{t('settings.system')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -93,28 +127,29 @@ const SettingsPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="h-5 w-5" />
-                Language & Region
+                {t('settings.language')}
               </CardTitle>
-              <CardDescription>Set your preferred language and region</CardDescription>
+              <CardDescription>{t('settings.language.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Language</Label>
-                  <Select defaultValue="en">
+                  <Label>{t('settings.lang')}</Label>
+                  <Select value={language} onValueChange={handleLanguageChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                      <SelectItem value="system">{t('settings.system')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Time Zone</Label>
-                  <Select defaultValue="utc">
+                  <Label>{t('settings.timezone')}</Label>
+                  <Select value={timeZone} onValueChange={setTimeZone}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select time zone" />
                     </SelectTrigger>
@@ -134,25 +169,32 @@ const SettingsPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Privacy & Security
+                {t('settings.privacy')}
               </CardTitle>
-              <CardDescription>Manage your privacy and security settings</CardDescription>
+              <CardDescription>{t('settings.privacy.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Two-Factor Authentication</Label>
-                    <p className="text-sm text-keysai-textBody">Add an extra layer of security to your account</p>
+                    <Label>{t('settings.2fa')}</Label>
+                    <p className="text-sm text-keysai-textBody">{t('settings.2fa.description')}</p>
                   </div>
-                  <Switch />
+                  <Switch 
+                    checked={twoFactor}
+                    onCheckedChange={setTwoFactor}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Activity Log</Label>
-                    <p className="text-sm text-keysai-textBody">Keep track of your account activity</p>
+                    <Label>{t('settings.activity')}</Label>
+                    <p className="text-sm text-keysai-textBody">{t('settings.activity.description')}</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch 
+                    checked={activityLog}
+                    onCheckedChange={setActivityLog}
+                    defaultChecked 
+                  />
                 </div>
               </div>
             </CardContent>
@@ -162,9 +204,9 @@ const SettingsPage = () => {
           <div className="flex justify-end">
             <Button 
               className="bg-keysai-accent hover:bg-blue-600"
-              onClick={() => toast.success('Settings saved successfully!')}
+              onClick={handleSaveChanges}
             >
-              Save Changes
+              {t('settings.save')}
             </Button>
           </div>
         </div>
@@ -173,4 +215,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage; 
+export default SettingsPage;

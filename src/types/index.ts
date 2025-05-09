@@ -35,7 +35,7 @@ export interface PackageItem {
   name: string;
   description: string;
   basePrice: number;
-  promoPrice?: number;
-  promoDuration?: number;
+  promoPrice?: number | null;
+  promoDuration?: number | null;
   features: string[];
 }
