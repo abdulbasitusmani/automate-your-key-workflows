@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
+import AuthCallback from "./pages/AuthCallback";
 
 // Layout Components
 import Navbar from "@/components/Navbar";
@@ -55,6 +55,7 @@ const App = () => (
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,15 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
-import { useTheme } from '@/hooks/useTheme';
 import { useLanguage, Language } from '@/hooks/useLanguage';
 import { toast } from 'sonner';
-import { Bell, Globe, Lock, Moon, Shield } from 'lucide-react';
+import { Bell, Globe, Lock, Shield } from 'lucide-react';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
   // State for form fields
@@ -24,11 +21,6 @@ const SettingsPage = () => {
   const [twoFactor, setTwoFactor] = useState(false);
   const [activityLog, setActivityLog] = useState(true);
   const [timeZone, setTimeZone] = useState('utc');
-  
-  // Handle theme change
-  const handleThemeChange = (value: string) => {
-    setTheme(value as 'light' | 'dark' | 'system');
-  };
 
   // Handle language change
   const handleLanguageChange = (value: string) => {
@@ -89,34 +81,6 @@ const SettingsPage = () => {
                     checked={pushNotifications}
                     onCheckedChange={setPushNotifications}
                   />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Appearance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Moon className="h-5 w-5" />
-                {t('settings.appearance')}
-              </CardTitle>
-              <CardDescription>{t('settings.appearance.description')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>{t('settings.theme')}</Label>
-                  <Select value={theme} onValueChange={handleThemeChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select theme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">{t('settings.light')}</SelectItem>
-                      <SelectItem value="dark">{t('settings.dark')}</SelectItem>
-                      <SelectItem value="system">{t('settings.system')}</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             </CardContent>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Menu, X, User, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,30 @@ import {
 const Navbar = () => {
   const { user, role, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  const linkClasses = (path: string) => {
+    return `px-3 py-2 text-sm font-medium transition-colors ${
+      isActive(path)
+        ? 'text-keysai-accent border-b-2 border-keysai-accent'
+        : 'text-keysai-textBody hover:text-keysai-accent'
+    }`;
+  };
+
+  const mobileLinkClasses = (path: string) => {
+    return `block px-4 py-2 text-base font-medium transition-colors ${
+      isActive(path)
+        ? 'text-keysai-accent bg-gray-50'
+        : 'text-keysai-textBody hover:bg-gray-50'
+    }`;
   };
 
   return (
@@ -27,35 +48,35 @@ const Navbar = () => {
               <span className="text-keysai-accent text-2xl font-bold">Keys-AI</span>
             </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
-              <Link to="/" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+              <Link to="/" className={linkClasses('/')}>
                 Home
               </Link>
-              <Link to="/agents" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+              <Link to="/agents" className={linkClasses('/agents')}>
                 Agents
               </Link>
-              <Link to="/pricing" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+              <Link to="/pricing" className={linkClasses('/pricing')}>
                 Pricing
               </Link>
-              <Link to="/about" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+              <Link to="/about" className={linkClasses('/about')}>
                 About
               </Link>
-              <Link to="/contact" className="text-keysai-textBody hover:text-keysai-accent px-3 py-2 text-sm font-medium">
+              <Link to="/contact" className={linkClasses('/contact')}>
                 Contact
               </Link>
             </div>
           </div>
           
-          <div className="flex items-center">
+          <div className="hidden sm:flex sm:items-center">
             {user ? (
               <>
                 <Link to="/dashboard">
-                  <Button variant="outline" className="mr-2">
+                  <Button variant="outline" className={`mr-2 ${isActive('/dashboard') ? 'border-keysai-accent text-keysai-accent' : ''}`}>
                     Dashboard
                   </Button>
                 </Link>
                 {role === 'admin' && (
                   <Link to="/admin">
-                    <Button variant="outline" className="mr-2">
+                    <Button variant="outline" className={`mr-2 ${isActive('/admin') ? 'border-keysai-accent text-keysai-accent' : ''}`}>
                       Admin Panel
                     </Button>
                   </Link>
@@ -68,13 +89,13 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center">
+                      <Link to="/profile" className={`flex items-center ${isActive('/profile') ? 'text-keysai-accent' : ''}`}>
                         <User className="mr-2 h-4 w-4" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/settings" className="flex items-center">
+                      <Link to="/settings" className={`flex items-center ${isActive('/settings') ? 'text-keysai-accent' : ''}`}>
                         <Settings className="mr-2 h-4 w-4" />
                         <span>Settings</span>
                       </Link>
@@ -89,7 +110,7 @@ const Navbar = () => {
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="outline" className="mr-2">
+                  <Button variant="outline" className={`mr-2 ${isActive('/login') ? 'border-keysai-accent text-keysai-accent' : ''}`}>
                     Log In
                   </Button>
                 </Link>
@@ -119,35 +140,35 @@ const Navbar = () => {
         <div className="sm:hidden bg-white pt-2 pb-4 space-y-1 border-t">
           <Link 
             to="/" 
-            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            className={mobileLinkClasses('/')}
             onClick={() => setMobileMenuOpen(false)}
           >
             Home
           </Link>
           <Link 
             to="/agents" 
-            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            className={mobileLinkClasses('/agents')}
             onClick={() => setMobileMenuOpen(false)}
           >
             Agents
           </Link>
           <Link 
             to="/pricing" 
-            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            className={mobileLinkClasses('/pricing')}
             onClick={() => setMobileMenuOpen(false)}
           >
             Pricing
           </Link>
           <Link 
             to="/about" 
-            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            className={mobileLinkClasses('/about')}
             onClick={() => setMobileMenuOpen(false)}
           >
             About
           </Link>
           <Link 
             to="/contact" 
-            className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+            className={mobileLinkClasses('/contact')}
             onClick={() => setMobileMenuOpen(false)}
           >
             Contact
@@ -156,7 +177,7 @@ const Navbar = () => {
             <>
               <Link 
                 to="/dashboard" 
-                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className={mobileLinkClasses('/dashboard')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Dashboard
@@ -164,7 +185,7 @@ const Navbar = () => {
               {role === 'admin' && (
                 <Link 
                   to="/admin" 
-                  className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                  className={mobileLinkClasses('/admin')}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Admin Panel
@@ -172,14 +193,14 @@ const Navbar = () => {
               )}
               <Link 
                 to="/profile" 
-                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className={mobileLinkClasses('/profile')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Profile
               </Link>
               <Link 
                 to="/settings" 
-                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className={mobileLinkClasses('/settings')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Settings
@@ -198,14 +219,14 @@ const Navbar = () => {
             <>
               <Link 
                 to="/login" 
-                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className={mobileLinkClasses('/login')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Log In
               </Link>
               <Link 
                 to="/signup" 
-                className="block px-4 py-2 text-base font-medium text-keysai-textBody hover:bg-gray-50"
+                className={mobileLinkClasses('/signup')}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Sign Up

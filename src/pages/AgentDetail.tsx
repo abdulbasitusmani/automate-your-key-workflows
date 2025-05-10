@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getAgentById } from '@/lib/api';
-import PaymentModal from '@/components/PaymentModal';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -13,22 +11,16 @@ const AgentDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [showError, setShowError] = useState(false);
   
-  const { data: agent, isLoading, error } = useQuery({
+  const { data: agent, isLoading } = useQuery({
     queryKey: ['agent', id],
     queryFn: () => getAgentById(id!),
     enabled: !!id,
   });
 
-  const handleBuyClick = () => {
-    if (!user) {
-      toast.error('Please log in to subscribe to an agent');
-      navigate('/login');
-      return;
-    }
-    
-    setIsPaymentModalOpen(true);
+  const handleSelectAgent = () => {
+    setShowError(true);
   };
 
   if (isLoading) {
@@ -42,7 +34,7 @@ const AgentDetail = () => {
     );
   }
 
-  if (error || !agent) {
+  if (showError) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="text-center text-red-500">
@@ -73,15 +65,15 @@ const AgentDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column - Agent details */}
           <div className="lg:col-span-2">
-            <h1 className="heading-lg mb-4">{agent.name}</h1>
+            <h1 className="heading-lg mb-4">{agent?.name || 'Agent Name'}</h1>
             
             <div className="bg-white rounded-xl shadow-custom p-8 mb-8">
               <h2 className="text-xl font-semibold mb-4">Overview</h2>
-              <p className="text-keysai-textBody mb-6">{agent.description}</p>
+              <p className="text-keysai-textBody mb-6">{agent?.description || 'Agent description goes here.'}</p>
               
               <h3 className="font-semibold text-lg mb-3">Key Features</h3>
               <ul className="space-y-2">
-                {getAgentFeatures(agent.name).map((feature, index) => (
+                {getAgentFeatures(agent?.name || '').map((feature, index) => (
                   <li key={index} className="flex items-center">
                     <CheckCircle className="h-5 w-5 text-keysai-accent mr-2 flex-shrink-0" />
                     <span>{feature}</span>
@@ -93,7 +85,7 @@ const AgentDetail = () => {
             <div className="bg-white rounded-xl shadow-custom p-8">
               <h2 className="text-xl font-semibold mb-4">How It Works</h2>
               <ol className="list-decimal ml-6 space-y-4">
-                {getAgentSteps(agent.name).map((step, index) => (
+                {getAgentSteps(agent?.name || '').map((step, index) => (
                   <li key={index} className="pl-2">
                     <p className="font-medium">{step.title}</p>
                     <p className="text-keysai-textBody">{step.description}</p>
@@ -108,7 +100,7 @@ const AgentDetail = () => {
             <div className="bg-white rounded-xl shadow-custom p-8 sticky top-8">
               <h2 className="text-xl font-semibold mb-4">Subscription</h2>
               
-              {agent.promo_price ? (
+              {agent?.promo_price ? (
                 <div className="mb-6">
                   <div className="flex items-end gap-2 mb-1">
                     <span className="text-3xl font-bold text-keysai-accent">{agent.promo_price}€</span>
@@ -121,7 +113,7 @@ const AgentDetail = () => {
               ) : (
                 <div className="mb-6">
                   <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-keysai-accent">{agent.base_price}€</span>
+                    <span className="text-3xl font-bold text-keysai-accent">{agent?.base_price || '29.99'}€</span>
                     <span className="text-sm text-keysai-textBody">/month</span>
                   </div>
                 </div>
@@ -148,22 +140,14 @@ const AgentDetail = () => {
               
               <Button 
                 className="w-full bg-keysai-accent hover:bg-blue-600"
-                onClick={handleBuyClick}
+                onClick={handleSelectAgent}
               >
-                Buy Agent
+                Select Agent
               </Button>
             </div>
           </div>
         </div>
       </div>
-      
-      {agent && (
-        <PaymentModal
-          isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
-          agent={agent}
-        />
-      )}
     </div>
   );
 };

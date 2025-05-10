@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -66,6 +65,9 @@ const LoginPage = () => {
       if (error) {
         throw error;
       }
+      
+      // The redirect will be handled by the auth callback
+      // The AuthProvider will detect the session change and redirect to home
     } catch (error: any) {
       console.error('Google login error:', error);
       toast.error(error.message || 'Failed to log in with Google');

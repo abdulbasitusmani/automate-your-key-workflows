@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,45 +20,51 @@ const HomePage = () => {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <section className="bg-keysai-background py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center md:items-start gap-10">
+          {/* Left: Headline and subtitle */}
+          <div className="flex-1 md:pr-8 text-center md:text-left mb-10 md:mb-0">
             <h1 className="heading-xl mb-6">
-              Automate Your Business Workflows
+              Automate Your Business<br className="hidden md:block" /> Workflows
             </h1>
-            <p className="subtitle mb-8 max-w-3xl mx-auto">
+            <p className="subtitle mb-8 max-w-3xl mx-auto md:mx-0">
               Keys-AI gives you the power to automate Instagram DMs, WhatsApp reminders, and bill management with intelligent AI workflows.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              {!user ? (
-                <>
-                  <Link to="/signup">
-                    <Button className="btn-primary">Get Started</Button>
-                  </Link>
-                  <Link to="/login">
-                    <Button variant="outline" className="btn-secondary">Login</Button>
-                  </Link>
-                </>
-              ) : (
-                <Link to="/agents">
-                  <Button className="btn-primary">View Agents</Button>
-                </Link>
-              )}
-            </div>
           </div>
-          
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-center mb-8">Our AI Agents</h2>
-            {isLoading ? (
-              <div className="flex justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {agents?.slice(0, 4).map((agent) => (
-                  <AgentHeroCard key={agent.id} agent={agent} />
-                ))}
-              </div>
-            )}
+
+          {/* Right: AI-Powered Automations Card */}
+          <div className="flex-1 max-w-xl w-full">
+            <div className="bg-white rounded-2xl shadow-lg p-8 md:p-10">
+              <h3 className="text-xl font-bold text-blue-600 mb-6">AI-Powered Automations</h3>
+              <ul className="space-y-6">
+                <li className="flex items-start gap-4">
+                  <span className="bg-blue-100 text-blue-600 rounded-full p-2 mt-1">
+                    <MessageSquare size={28} />
+                  </span>
+                  <div>
+                    <span className="font-semibold text-base block mb-1">Instagram DM Automation</span>
+                    <span className="text-gray-500 text-sm">Respond to messages with AI.</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="bg-blue-100 text-blue-600 rounded-full p-2 mt-1">
+                    <Bell size={28} />
+                  </span>
+                  <div>
+                    <span className="font-semibold text-base block mb-1">WhatsApp Reminders</span>
+                    <span className="text-gray-500 text-sm">Schedule and send automatically.</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="bg-blue-100 text-blue-600 rounded-full p-2 mt-1">
+                    <HomeIcon size={28} />
+                  </span>
+                  <div>
+                    <span className="font-semibold text-base block mb-1">Bill Management</span>
+                    <span className="text-gray-500 text-sm">Never miss a payment with smart scheduling.</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>

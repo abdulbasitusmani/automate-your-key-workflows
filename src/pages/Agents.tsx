@@ -1,4 +1,3 @@
-
 import React from 'react';
 import AgentCard from '@/components/AgentCard';
 import { Agent } from '@/types';
@@ -10,6 +9,37 @@ const AgentsPage = () => {
     queryKey: ['agents'],
     queryFn: getAgents,
   });
+
+  // Add new agents that are coming soon
+  const newAgents: Agent[] = [
+    {
+      id: 'instagram-dms',
+      name: 'Instagram DMs',
+      description: 'Automate your Instagram direct messages with AI-powered responses and engagement tracking.',
+      base_price: 29.99,
+      promo_price: null,
+      promo_duration: null,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 'whatsapp-reminders',
+      name: 'WhatsApp Reminders',
+      description: 'Set up automated WhatsApp reminders for appointments, meetings, and important events.',
+      base_price: 24.99,
+      promo_price: null,
+      promo_duration: null,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 'bill-management',
+      name: 'Bill Management',
+      description: 'Automate your bill payments, track expenses, and manage your finances efficiently.',
+      base_price: 34.99,
+      promo_price: null,
+      promo_duration: null,
+      created_at: new Date().toISOString(),
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -44,6 +74,9 @@ const AgentsPage = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
           {agents?.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+          {newAgents.map((agent) => (
             <AgentCard key={agent.id} agent={agent} />
           ))}
         </div>
