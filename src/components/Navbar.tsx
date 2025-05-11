@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Menu, X, User, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,14 +84,22 @@ const Navbar = () => {
                 )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-gray-200 hover:bg-gray-50">
-                      <User className="h-5 w-5" />
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-keysai-accent text-white">
+                          {user.user_metadata?.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className={`flex items-center ${isActive('/profile') ? 'text-keysai-accent' : ''}`}>
-                        <User className="mr-2 h-4 w-4" />
+                        <Avatar className="h-4 w-4 mr-2">
+                          <AvatarFallback className="bg-keysai-accent text-white text-xs">
+                            {user.user_metadata?.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
