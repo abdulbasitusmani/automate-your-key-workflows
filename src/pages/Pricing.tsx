@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getAgents } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,9 @@ import { Check, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 // Define Package interface for static data
 interface PackageItem {
@@ -85,7 +87,9 @@ const PricingPage = () => {
   
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(null);
+
   const handleSelectPlan = (packageId: number) => {
     if (!user) {
       toast.info('Please log in to subscribe to this plan.', {
@@ -96,9 +100,9 @@ const PricingPage = () => {
       });
       return;
     }
-    
-    toast.success('This feature is coming soon!');
-    // Future implementation: navigate(`/packages/${packageId}`);
+    const pkg = packages.find(p => p.id === packageId);
+    setSelectedPackage(pkg || null);
+    setIsModalOpen(true);
   };
   
   if (isLoading) {
@@ -110,7 +114,7 @@ const PricingPage = () => {
   }
   
   return (
-    <div className="py-12 md:py-24">
+    <div className={`py-12 md:py-24 ${isModalOpen ? 'blur-sm' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="heading-lg mb-4">Pricing Plans</h1>
@@ -174,6 +178,40 @@ const PricingPage = () => {
           </Link>
         </div>
       </div>
+
+      {/* Modal for Bank Details */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Enter Bank Details</DialogTitle>
+            <DialogDescription>
+              Please provide your bank details to subscribe to {selectedPackage?.name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="cardNumber">Card Number</Label>
+              <Input id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cardName">Cardholder Name</Label>
+              <Input id="cardName" name="cardName" placeholder="John Doe" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiryDate">Expiry Date</Label>
+              <Input id="expiryDate" name="expiryDate" placeholder="MM/YY" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cvv">CVV</Label>
+              <Input id="cvv" name="cvv" placeholder="123" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button className="bg-keysai-accent hover:bg-blue-600">Submit</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

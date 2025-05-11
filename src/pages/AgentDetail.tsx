@@ -66,12 +66,9 @@ const AgentDetail = () => {
           {/* Left column - Agent details */}
           <div className="lg:col-span-2">
             <h1 className="heading-lg mb-4">{agent?.name || 'Agent Name'}</h1>
-            
+            <p className="text-keysai-textBody mb-6">{agent?.description || 'Agent description goes here.'}</p>
             <div className="bg-white rounded-xl shadow-custom p-8 mb-8">
-              <h2 className="text-xl font-semibold mb-4">Overview</h2>
-              <p className="text-keysai-textBody mb-6">{agent?.description || 'Agent description goes here.'}</p>
-              
-              <h3 className="font-semibold text-lg mb-3">Key Features</h3>
+              <h2 className="text-xl font-semibold mb-4">Overview & Key Features</h2>
               <ul className="space-y-2">
                 {getAgentFeatures(agent?.name || '').map((feature, index) => (
                   <li key={index} className="flex items-center">
@@ -81,7 +78,6 @@ const AgentDetail = () => {
                 ))}
               </ul>
             </div>
-            
             <div className="bg-white rounded-xl shadow-custom p-8">
               <h2 className="text-xl font-semibold mb-4">How It Works</h2>
               <ol className="list-decimal ml-6 space-y-4">
@@ -95,54 +91,16 @@ const AgentDetail = () => {
             </div>
           </div>
           
-          {/* Right column - Pricing */}
+          {/* Right column - Business Growth Message */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-custom p-8 sticky top-8">
-              <h2 className="text-xl font-semibold mb-4">Subscription</h2>
-              
-              {agent?.promo_price ? (
-                <div className="mb-6">
-                  <div className="flex items-end gap-2 mb-1">
-                    <span className="text-3xl font-bold text-keysai-accent">{agent.promo_price}€</span>
-                    <span className="text-sm text-keysai-textBody">/month</span>
-                  </div>
-                  <p className="text-keysai-textBody text-sm">
-                    for first {agent.promo_duration} months, then {agent.base_price}€/month
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-6">
-                  <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-keysai-accent">{agent?.base_price || '29.99'}€</span>
-                    <span className="text-sm text-keysai-textBody">/month</span>
-                  </div>
-                </div>
-              )}
-              
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-keysai-accent mr-2 flex-shrink-0" />
-                  <span>24/7 Automated Responses</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-keysai-accent mr-2 flex-shrink-0" />
-                  <span>Advanced Analytics Dashboard</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-keysai-accent mr-2 flex-shrink-0" />
-                  <span>Priority Customer Support</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-keysai-accent mr-2 flex-shrink-0" />
-                  <span>Cancel Anytime</span>
-                </li>
-              </ul>
-              
+              <h2 className="text-xl font-semibold mb-4">How It Can Help Grow Your Business</h2>
+              <p className="text-keysai-textBody mb-6">Leverage the power of AI to automate tasks, enhance productivity, and drive business growth with our specialized agent.</p>
               <Button 
                 className="w-full bg-keysai-accent hover:bg-blue-600"
                 onClick={handleSelectAgent}
               >
-                Select Agent
+                Use Agent
               </Button>
             </div>
           </div>
