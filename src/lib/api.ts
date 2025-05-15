@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { Agent, Subscription, UserProfile } from '@/types';
+import { Agent, Subscription, UserProfile, ContactInfo } from '@/types';
 
 // Agent functions
 export async function getAgents(): Promise<Agent[]> {
@@ -166,6 +165,36 @@ export async function updateUserRole(userId: string, newRole: string): Promise<v
   
   if (error) {
     console.error('Error updating user role:', error);
+    throw error;
+  }
+}
+
+// Contact Information functions
+export async function getContactInfo(): Promise<ContactInfo> {
+  const { data, error } = await supabase
+    .from('contact_info')
+    .select('*')
+    .single();
+  
+  if (error) {
+    console.error('Error fetching contact info:', error);
+    throw error;
+  }
+  
+  return data as ContactInfo;
+}
+
+export async function updateContactInfo(contactInfo: Omit<ContactInfo, 'id' | 'updated_at'>): Promise<void> {
+  const { error } = await supabase
+    .from('contact_info')
+    .upsert({
+      id: 1, // We'll use a single row for contact info
+      ...contactInfo,
+      updated_at: new Date().toISOString()
+    });
+  
+  if (error) {
+    console.error('Error updating contact info:', error);
     throw error;
   }
 }

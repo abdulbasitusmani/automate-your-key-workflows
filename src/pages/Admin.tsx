@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
-import { getAllUsers, getAllSubscriptions, updateUserRole } from '@/lib/api';
+import { getAllUsers, getAllSubscriptions, updateUserRole, getContactInfo, updateContactInfo } from '@/lib/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Trash2, Edit2, Save, Shield, Package, X } from 'lucide-react';
@@ -52,11 +51,28 @@ const AdminPage = () => {
   const isMobile = useIsMobile();
   
   // Contact Information State
-  const [contactInfo, setContactInfo] = useState({
-    email: 'contact@keys-ai.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Business Street, Tech City, TC 12345'
+  const { data: contactInfo, isLoading: contactInfoLoading } = useQuery({
+    queryKey: ['contact-info'],
+    queryFn: getContactInfo,
+    enabled: !!user && role === 'admin',
   });
+
+  const [editedContactInfo, setEditedContactInfo] = useState<Omit<ContactInfo, 'id' | 'updated_at'>>({
+    email: '',
+    phone: '',
+    address: ''
+  });
+
+  // Update local state when data is loaded
+  React.useEffect(() => {
+    if (contactInfo) {
+      setEditedContactInfo({
+        email: contactInfo.email,
+        phone: contactInfo.phone,
+        address: contactInfo.address
+      });
+    }
+  }, [contactInfo]);
 
   // About Section State
   const [aboutInfo, setAboutInfo] = useState({
@@ -170,10 +186,16 @@ const AdminPage = () => {
     return null;
   }
 
-  const handleSaveContact = () => {
-    // Here you would typically make an API call to update the contact information
-    toast.success('Contact information updated successfully!');
-    setIsEditing(false);
+  const handleSaveContact = async () => {
+    try {
+      await updateContactInfo(editedContactInfo);
+      toast.success('Contact information updated successfully!');
+      setIsEditing(false);
+      // Invalidate and refetch contact info
+      queryClient.invalidateQueries({ queryKey: ['contact-info'] });
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update contact information');
+    }
   };
 
   const handleSaveAbout = () => {
@@ -301,7 +323,7 @@ const AdminPage = () => {
                         Add New Package
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <div className="flex justify-between items-center">
                           <DialogTitle>Add New Package</DialogTitle>
@@ -314,7 +336,9 @@ const AdminPage = () => {
                           Create a new package for your customers to subscribe to.
                         </DialogDescription>
                       </DialogHeader>
-                      <AddPackageForm onSubmit={handleAddNewPackage} />
+                      <div className="pr-2">
+                        <AddPackageForm onSubmit={handleAddNewPackage} />
+                      </div>
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -436,43 +460,49 @@ const AdminPage = () => {
                   </Button>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      value={contactInfo.email}
-                      onChange={(e) => setContactInfo({ ...contactInfo, email: e.target.value })}
-                      disabled={!isEditing}
-                    />
+                {contactInfoLoading ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin h-8 w-8 border-4 border-keysai-accent border-t-transparent rounded-full"></div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <Input
-                      value={contactInfo.phone}
-                      onChange={(e) => setContactInfo({ ...contactInfo, phone: e.target.value })}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address</Label>
-                    <Textarea
-                      value={contactInfo.address}
-                      onChange={(e) => setContactInfo({ ...contactInfo, address: e.target.value })}
-                      disabled={!isEditing}
-                    />
-                  </div>
-
-                  {isEditing && (
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleSaveContact}
-                        className="bg-keysai-accent hover:bg-blue-600"
-                      >
-                        Save Changes
-                      </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input
+                        value={editedContactInfo.email}
+                        onChange={(e) => setEditedContactInfo({ ...editedContactInfo, email: e.target.value })}
+                        disabled={!isEditing}
+                      />
                     </div>
-                  )}
-                </div>
+                    <div className="space-y-2">
+                      <Label>Phone Number</Label>
+                      <Input
+                        value={editedContactInfo.phone}
+                        onChange={(e) => setEditedContactInfo({ ...editedContactInfo, phone: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Address</Label>
+                      <Textarea
+                        value={editedContactInfo.address}
+                        onChange={(e) => setEditedContactInfo({ ...editedContactInfo, address: e.target.value })}
+                        disabled={!isEditing}
+                      />
+                    </div>
+
+                    {isEditing && (
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleSaveContact}
+                          className="bg-keysai-accent hover:bg-blue-600"
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

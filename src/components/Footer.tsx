@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -9,7 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left section */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Keys-AI</h3>
+            <img src="/pics/logo footer.png" alt="Keys-AI Logo" className="h-28 mb-4" />
             <p className="text-gray-300">
               Powerful automation solutions for the modern business.
             </p>
@@ -58,14 +57,14 @@ const Footer = () => {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <span className="text-gray-300 mr-1">Email:</span>
-                <a href="mailto:info@keys-ai.com" className="text-gray-300 hover:text-white transition-colors">
-                  info@keys-ai.com
+                <a href="mailto:support@keys-ai.com" className="text-gray-300 hover:text-white transition-colors">
+                  support@keys-ai.com
                 </a>
               </li>
               <li className="flex items-center">
                 <span className="text-gray-300 mr-1">Phone:</span>
-                <a href="tel:(123)456-7890" className="text-gray-300 hover:text-white transition-colors">
-                  (123) 456-7890
+                <a href="tel:+1-555-123-4567" className="text-gray-300 hover:text-white transition-colors">
+                  +1 (555) 123-4567
                 </a>
               </li>
             </ul>
