@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
-  const { user, role, signOut } = useAuth();
+  const { user,  signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -75,13 +75,7 @@ const Navbar = () => {
                     Dashboard
                   </Button>
                 </Link>
-                {role === 'admin' && (
-                  <Link to="/admin">
-                    <Button variant="outline" className={`mr-2 ${isActive('/admin') ? 'border-keysai-accent text-keysai-accent' : ''}`}>
-                      Admin Panel
-                    </Button>
-                  </Link>
-                )}
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -191,15 +185,7 @@ const Navbar = () => {
               >
                 Dashboard
               </Link>
-              {role === 'admin' && (
-                <Link 
-                  to="/admin" 
-                  className={mobileLinkClasses('/admin')}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Admin Panel
-                </Link>
-              )}
+              
               <Link 
                 to="/profile" 
                 className={mobileLinkClasses('/profile')}

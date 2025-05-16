@@ -14,7 +14,6 @@ import Signup from "./pages/Signup";
 import Agents from "./pages/Agents";
 import AgentDetail from "./pages/AgentDetail";
 import Dashboard from "./pages/Dashboard";
-import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -49,7 +48,6 @@ const App = () => (
                     <Route path="/agents" element={<Agents />} />
                     <Route path="/agents/:id" element={<AgentDetail />} />
                     <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/admin" element={<Admin />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/profile" element={<Profile />} />

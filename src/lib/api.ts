@@ -126,49 +126,6 @@ export async function createUserProfile(profile: {
   }
 }
 
-// Admin functions
-export async function getAllUsers(): Promise<UserProfile[]> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*');
-  
-  if (error) {
-    console.error('Error fetching all users:', error);
-    throw error;
-  }
-  
-  return (data || []) as UserProfile[];
-}
-
-export async function getAllSubscriptions(): Promise<Subscription[]> {
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .select(`
-      *,
-      user:users(*),
-      agent:agents(*)
-    `);
-  
-  if (error) {
-    console.error('Error fetching all subscriptions:', error);
-    throw error;
-  }
-  
-  return (data || []) as Subscription[];
-}
-
-export async function updateUserRole(userId: string, newRole: string): Promise<void> {
-  const { error } = await supabase
-    .from('users')
-    .update({ role: newRole })
-    .eq('id', userId);
-  
-  if (error) {
-    console.error('Error updating user role:', error);
-    throw error;
-  }
-}
-
 // Contact Information functions
 export async function getContactInfo(): Promise<ContactInfo> {
   const { data, error } = await supabase
