@@ -46,7 +46,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <img src="/pics/logo nav.png" alt="Keys-AI Logo" className="h-10" />
+              <img src="../pics/logo nav.png" alt="Keys-AI Logo" className="h-10" />
             </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
               <Link to="/" className={linkClasses('/')}>
