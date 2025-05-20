@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logofooter from './pics/logofooter.png';
 
 const Footer = () => {
   return (
@@ -8,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left section */}
           <div>
-            <img src="/pics/logo footer.png" alt="Keys-AI Logo" className="h-28 mb-4" />
+            <img src={logofooter} alt="Keys-AI Logo" className="h-28 mb-4" />
             <p className="text-gray-300">
               Powerful automation solutions for the modern business.
             </p>
